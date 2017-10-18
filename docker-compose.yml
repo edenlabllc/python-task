@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  db:
+    image: spartakode/sqlite3
+  web:
+    build: .
+    command: bash -c "[ ! -f DATA_IMPORTED ] && python3 import_data.py && touch DATA_IMPORTED; flask run"
+    volumes:
+      - .:/code
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
