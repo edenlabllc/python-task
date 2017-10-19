@@ -4,7 +4,7 @@ import optparse
 import requests
 from requests.utils import unquote
 import time
-from app import db, Repository, app
+from app import db, app, Repository
 
 GITHUB_API_ENDPOINT = 'https://api.github.com/search/repositories'
 DEFAULT_LANG = 'Python'
