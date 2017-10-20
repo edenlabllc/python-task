@@ -24,12 +24,9 @@ class TestAPIWithPagination(unittest.TestCase):
         os.environ['WITH_PAGINATION'] = '1'
 
     def setUp(self):
-        self.maxDiff = None
-
         app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(
-            BASE_DIR, 'test.db')
-        self.app = app.test_client()
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{}'.format(
+            os.path.join(BASE_DIR, 'test.db'))
         db.create_all()
         self.client = app.test_client()
         self.path = '/api/v1.0/repositories'
@@ -40,6 +37,7 @@ class TestAPIWithPagination(unittest.TestCase):
     def test_request_first_page(self):
         create_test_data()
         response = self.client.open(self.path + '?per_page=1')
+        self.assertEqual(200, response.status_code)
 
         response_data = json.loads(response.get_data().decode())
         self.assertTrue('page=2' in response_data['next'])
@@ -53,6 +51,7 @@ class TestAPIWithPagination(unittest.TestCase):
     def test_request_middle_page(self):
         create_test_data()
         response = self.client.open(self.path + '?page=2&per_page=1')
+        self.assertEqual(200, response.status_code)
 
         response_data = json.loads(response.get_data().decode())
         self.assertTrue('page=3' in response_data['next'])
@@ -66,6 +65,7 @@ class TestAPIWithPagination(unittest.TestCase):
     def test_request_last_page(self):
         create_test_data()
         response = self.client.open(self.path + '?page=3&per_page=1')
+        self.assertEqual(200, response.status_code)
 
         response_data = json.loads(response.get_data().decode())
         self.assertEqual('', response_data['next'])
@@ -78,8 +78,9 @@ class TestAPIWithPagination(unittest.TestCase):
 
     def test_with_empty_database(self):
         response = self.client.open(self.path)
-        response_data = json.loads(response.get_data().decode())
+        self.assertEqual(200, response.status_code)
 
+        response_data = json.loads(response.get_data().decode())
         self.assertEqual(self.path, response_data['first'])
         self.assertEqual('', response_data['next'])
         self.assertEqual('', response_data['prev'])

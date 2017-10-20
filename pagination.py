@@ -1,4 +1,3 @@
-from app import db
 from sqlalchemy import and_
 
 
@@ -55,7 +54,7 @@ class Pagination:
 
     def paginate(self, model):
         """Build DB query with regards to requested pagination"""
-        return (db.session
-                .query(model)
+        return (model
+                .query
                 .filter(and_(model.id >= self.start_id,
                              model.id <= self.end_id)))
