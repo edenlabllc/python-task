@@ -2,13 +2,59 @@ version: '3'
 
 services:
   db:
-    image: spartakode/sqlite3
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+  db_upgrade:
+    build: .
+    image: app
+    command: "flask db upgrade"
+    environment:
+      FLASK_APP: autoapp.py
+      FLASK_DEBUG: 0
+      DB_SERVICE: "db"
+      DB_NAME: "postgres"
+      DB_USER: "postgres"
+      DB_PASS: "postgres"
+      DB_PORT: 5432
+    volumes:
+      - .:/code
+    depends_on:
+      - db
   web:
     build: .
-    command: bash -c "[ ! -f DATA_IMPORTED ] && python3 import_data.py && touch DATA_IMPORTED; flask run"
+    image: app
+    command: "flask run --host=0.0.0.0 --port=5000"
+    environment:
+      FLASK_APP: autoapp.py
+      FLASK_DEBUG: 0
+      DB_SERVICE: "db"
+      DB_NAME: "postgres"
+      DB_USER: "postgres"
+      DB_PASS: "postgres"
+      DB_PORT: 5432
     volumes:
       - .:/code
     ports:
       - "5000:5000"
     depends_on:
-      - db
+      - db_upgrade
+  import_data:
+    build: .
+    image: app
+    command:  bash -c "[ ! -f DATA_IMPORTED ] && flask import_data && touch DATA_IMPORTED"
+    environment:
+      FLASK_APP: autoapp.py
+      FLASK_DEBUG: 0
+      DB_SERVICE: "db"
+      DB_NAME: "postgres"
+      DB_USER: "postgres"
+      DB_PASS: "postgres"
+      DB_PORT: 5432
+    volumes:
+      - .:/code
+    depends_on:
+      - web

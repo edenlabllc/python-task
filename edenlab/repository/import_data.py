@@ -1,26 +1,15 @@
 import re
 
-import optparse
 import requests
 from requests.utils import unquote
 import time
-from app import db, app, Repository
+from edenlab.database import db
+from edenlab.repository.models import Repository
 
 GITHUB_API_ENDPOINT = 'https://api.github.com/search/repositories'
 DEFAULT_LANG = 'Python'
 DEFAULT_KEYWORD = 'rest'
 DEFAULT_IMPORT_FIELDS = 'full_name,html_url,description,stargazers_count,language'
-
-# Configure the option parser
-usage = 'usage: %prog [options]'
-parser = optparse.OptionParser(usage)
-parser.add_option('-l', '--lang', dest='lang', default=DEFAULT_LANG,
-                  help='Searches repositories based on the language they\'re written in.')
-parser.add_option('-k', '--keyword', dest='keyword', default=DEFAULT_KEYWORD,
-                  help='Search for repositories with the given word in the name, the description, or the README.')
-parser.add_option('', '--import_fields', dest='import_fields', default=DEFAULT_IMPORT_FIELDS,
-                  help='Comma-separated field names, which should be imported from GitHub API.')
-(options, args) = parser.parse_args()
 
 
 def import_data(keyword, lang, fields):
@@ -30,7 +19,7 @@ def import_data(keyword, lang, fields):
     link = GITHUB_API_ENDPOINT + '?q=' + build_query(keyword, *params)
 
     while link:
-        app.logger.debug('Requesting link %s', link)
+        print('Requesting link {}'.format(link))
 
         response = requests.get(link, headers=headers)
 
@@ -60,8 +49,7 @@ def sleep_if_needed(headers):
         # Sleep until the time at which the current rate limit window resets
         ratelimit_reset = headers['X-RateLimit-Reset']
         to_sleep = int(ratelimit_reset) - int(time.time())
-        app.logger.debug('Rate limit exceeded, will sleep for %i seconds',
-                         to_sleep)
+        print('Rate limit exceeded, will sleep for {} seconds'.format(to_sleep))
         time.sleep(to_sleep)
 
 
@@ -92,13 +80,3 @@ def get_next_link(header):
                         return unquote(match.group(1))
 
     return None
-
-if __name__ == '__main__':
-    try:
-        keyword = options.keyword
-        lang = options.lang
-        fields = options.import_fields.split(',')
-
-        import_data(keyword, lang, fields)
-    except Exception as e:
-        app.logger.debug(e)
