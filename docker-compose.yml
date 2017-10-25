@@ -3,58 +3,18 @@ version: '3'
 services:
   db:
     image: postgres
-    ports:
-      - "5432:5432"
     environment:
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
-  db_upgrade:
-    build: .
-    image: app
-    command: "flask db upgrade"
-    environment:
-      FLASK_APP: autoapp.py
-      FLASK_DEBUG: 0
-      DB_SERVICE: "db"
-      DB_NAME: "postgres"
-      DB_USER: "postgres"
-      DB_PASS: "postgres"
-      DB_PORT: 5432
-    volumes:
-      - .:/code
-    depends_on:
-      - db
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
   web:
     build: .
     image: app
-    command: "flask run --host=0.0.0.0 --port=5000"
-    environment:
-      FLASK_APP: autoapp.py
-      FLASK_DEBUG: 0
-      DB_SERVICE: "db"
-      DB_NAME: "postgres"
-      DB_USER: "postgres"
-      DB_PASS: "postgres"
-      DB_PORT: 5432
+    command: bash -c "flask db upgrade; flask run --host=${FLASK_HOST} --port=${FLASK_PORT}"
+    env_file:
+      - ${ENV_FILE}
     volumes:
       - .:/code
     ports:
-      - "5000:5000"
+      - "${FLASK_PORT}:${FLASK_PORT}"
     depends_on:
-      - db_upgrade
-  import_data:
-    build: .
-    image: app
-    command:  bash -c "[ ! -f DATA_IMPORTED ] && flask import_data && touch DATA_IMPORTED"
-    environment:
-      FLASK_APP: autoapp.py
-      FLASK_DEBUG: 0
-      DB_SERVICE: "db"
-      DB_NAME: "postgres"
-      DB_USER: "postgres"
-      DB_PASS: "postgres"
-      DB_PORT: 5432
-    volumes:
-      - .:/code
-    depends_on:
-      - web
+      - db
