@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+  web:
+    build: .
+    image: app
+    command: bash -c "flask db upgrade; flask run --host=${FLASK_HOST} --port=${FLASK_PORT}"
+    env_file:
+      - ${ENV_FILE}
+    volumes:
+      - .:/code
+    ports:
+      - "${FLASK_PORT}:${FLASK_PORT}"
+    depends_on:
+      - db
