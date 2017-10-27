@@ -1,22 +1,35 @@
-# Fork this project and send back a pull request.
+# Sample service for GitHub
 
-## What to do
-Create a simple API by importing data from GitHub Search API https://developer.github.com/v3/search/
+## Overview
 
-Import repositories that have been written in Python and have `rest` keyword. 
+Simple python webservice that returns the objects and manipuates the data found
+here [https://api.github.com/search/repositories/](https://api.github.com/search/repositories/).
 
-Import just a few fields from GitHub Search API: `full_name`, `html_url`, 
-`description`, `stargazers_count`, `language`.
 
-It is necessary to do a script to fill the database.
-Add sorting by `stars` to API. 
+## Requirements
 
-## Bonus 1
-Use docker compose encapsulating all the services related to this app.
+* Django==1.11.6
+* djangorestframework==3.7.1
+* requests==2.18.4
 
-## Bonus 2
-Add pagination to API.
+## Installation
 
-## Some help
-* How to fork https://help.github.com/articles/fork-a-repo/
-* How to do a pull request https://help.github.com/articles/using-pull-requests/
+Install using `pip`...
+```bash
+pip install -r requirements.txt
+```
+## Importing data
+Before getting data from GitHub search API v3 Insert you OAUTH tocken key to
+settings.GITHUB_OAUTH.
+For getting data from GitHub search API v3 use custom `fetchgithub` command
+
+```bash
+python manage.py fetchgithub [--last, --all]
+
+```
+
+## Endpoints
+
+**/repositories/**
+
+should return the first 100 objects ordered by `stargazers_coun`.

@@ -1,0 +1,29 @@
+version: '2'
+
+services:
+
+# Django web server
+  migration:
+    build: .
+    hostname: web
+    command: python manage.py migrate githubsearch_api
+    volumes:
+      - .:/python-task
+
+  fetchgithub:
+    build: .
+    hostname: web
+    command: python manage.py fetchgithub --last
+    volumes:
+      - .:/python-task
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: web
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/python-task  # mount current directory inside container
+    ports:
+      - "8000:8000"  
