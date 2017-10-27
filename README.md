@@ -32,4 +32,4 @@ python manage.py fetchgithub [--last, --all]
 
 **/repositories/**
 
-should return the first 100 objects ordered by `stargazers_coun`.
+should return the first 100 objects ordered by `stargazers_count`.
